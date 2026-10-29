@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thalya Rebouças | Portfólio BIM & Automação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #141414;
+            --bg-panel: #111111;
+            --neon-blue: #0088FF;
+            --accent-glow: #0088FF;
+            --accent-blue: #0088FF;
+            --text-main: #f3f4f6;
+            --text-light: #ffffff;
+            --text-gray: #9ca3af;
+            --border-color: #262626;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            background-image: linear-gradient(rgba(38, 38, 38, 0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(38, 38, 38, 0.2) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .neon-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 136, 255, 0.5);
+        }
+
+        .neon-border:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 136, 255, 0.3);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .familia-detalhe {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .familia-principal {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .familia-cabecalho {
+            padding: 22px 25px 0;
+        }
+
+        .familia-cabecalho h3 {
+            color: var(--accent-glow);
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        .familia-cabecalho p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .viewer {
+            position: relative;
+            height: 480px;
+            margin: 20px 25px 0;
+            background: radial-gradient(circle at 50% 40%, #0d1520 0%, #030303 75%);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            outline: none;
+        }
+
+        .viewer canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        .viewer canvas:active {
+            cursor: grabbing;
+        }
+
+        .viewer-carregando {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .viewer-carregando[hidden] {
+            display: none;
+        }
+
+        .viewer-tipo {
+            position: absolute;
+            top: 12px;
+            left: 14px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .viewer-tipo strong {
+            display: block;
+            font-size: 1.4rem;
+            color: var(--text-light);
+            letter-spacing: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .viewer-ajuda {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            font-size: 0.72rem;
+            color: #6b6b6b;
+            pointer-events: none;
+        }
+
+        .conector {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: rgba(0, 20, 40, 0.9);
+            border: 1px solid var(--accent-glow);
+            border-radius: 4px;
+            padding: 3px 6px;
+            box-shadow: 0 0 12px rgba(0, 136, 255, 0.45);
+            font-size: 0.75rem;
+            color: #fff;
+            z-index: 10;
+        }
+
+        .conector button {
+            width: 22px;
+            height: 22px;
+            border: 1px solid #fff;
+            border-radius: 3px;
+            background-color: rgba(0, 136, 255, 0.9);
+            color: #fff;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .conector button:hover {
+            background-color: #33a0ff;
+        }
+
+        .conector-dn {
+            padding: 0 4px;
+            font-variant-numeric: tabular-nums;
+            font-weight: bold;
+        }
+
+        .cota {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            color: var(--text-gray);
+            font-size: 0.78rem;
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
+        }
+
+        .barra {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 25px 22px;
+        }
+
+        .barra button, .painel select {
+            background-color: #1d1d1d;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .barra button:hover {
+            border-color: var(--accent-glow);
+        }
+
+        .barra .primario {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .barra button[aria-pressed="true"] {
+            border-color: var(--accent-glow);
+            color: var(--accent-glow);
+        }
+
+        .barra input[type="range"] {
+            flex: 1;
+            min-width: 140px;
+            accent-color: var(--accent-glow);
+        }
+
+        .painel {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+            background-color: #111;
+            min-height: 0;
+        }
+
+        .painel-abas {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .painel-abas button {
+            flex: 1;
+            padding: 14px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .painel-abas button[aria-selected="true"] {
+            color: var(--text-light);
+            border-bottom-color: var(--accent-glow);
+        }
+
+        .painel-conteudo {
+            padding: 18px;
+            overflow-y: auto;
+            max-height: 620px;
+        }
+
+        .painel-conteudo[hidden] {
+            display: none;
+        }
+
+        .propriedades {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .propriedades th[colspan] {
+            text-align: left;
+            background-color: #1b1b1b;
+            color: var(--text-light);
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .propriedades td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #1f1f1f;
+            color: var(--text-gray);
+        }
+
+        .catalogo {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .catalogo th {
+            position: sticky;
+            top: -18px;
+            background-color: #111;
+            color: var(--text-gray);
+            font-weight: 600;
+            text-align: right;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.75rem;
+        }
+
+        .catalogo td {
+            text-align: right;
+            padding: 7px 8px;
+            border-bottom: 1px solid #1c1c1c;
+        }
+
+        .catalogo th:first-child, .catalogo td:first-child {
+            text-align: left;
+        }
+
+        .catalogo tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .catalogo tbody tr:hover {
+            background-color: #1a2330;
+        }
+
+        .catalogo tbody tr.ativo {
+            background-color: rgba(0, 136, 255, 0.18);
+            color: #fff;
+        }
+
+        .catalogo tbody tr.ativo td:first-child {
+            box-shadow: inset 3px 0 0 var(--accent-glow);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navegação / Abas -->
+    <header class="sticky top-0 z-50 bg-[#0a0a0add] backdrop-blur-md border-b border-[#262626]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-4">
+                <nav class="flex space-x-1 sm:space-x-4 overflow-x-auto w-full md:w-auto pb-2 md:pb-0" aria-label="Tabs">
+                    <button onclick="openTab('tab-home')" id="btn-tab-home" class="tab-btn px-4 py-2 text-sm font-semibold rounded-t-md transition-all duration-300 border-b-2 border-[#0088FF] text-[#0088FF] bg-white/5">
+                        Home
+                    </button>
+                    <button onclick="openTab('tab-modelos')" id="btn-tab-modelos" class="tab-btn px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 border-b-2 border-transparent hover:bg-white/5">
+                        Modelos BIM
+                    </button>
+                    <button onclick="openTab('tab-automacoes')" id="btn-tab-automacoes" class="tab-btn px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 border-b-2 border-transparent hover:bg-white/5">
+                        Automações
+                    </button>
+                    <button onclick="openTab('tab-familias')" id="btn-tab-familias" class="tab-btn px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 border-b-2 border-transparent hover:bg-white/5 whitespace-nowrap">
+                        Famílias Paramétricas
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Área de Conteúdo -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        
+        <!-- ABA 1: HOME -->
+        <section id="tab-home" class="tab-pane fade-in block">
+            <div class="flex flex-col md:flex-row items-center gap-12 mt-8">
+                <div class="md:w-1/2 space-y-6">
+                    <h2 class="text-4xl md:text-5xl font-bold leading-tight">
+                        Thalya Rebouças <br>
+                        <span class="neon-text">Especialista BIM</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg leading-relaxed">
+                        Especialista em <strong>Bim developer e modeladora</strong>.
+                    </p>
+                    <p class="text-gray-400 text-lg leading-relaxed">
+                        Com <strong>5 anos de experiência</strong> em modelagem Revit e <strong>2 anos dedicados ao desenvolvimento de automações</strong>, crio ferramentas customizadas para eliminar retrabalho e garantir precisão milimétrica, desde a compatibilização até a entrega de pranchas finais.
+                    </p>
+                    <div class="pt-4 flex gap-4">
+                        <button onclick="openTab('tab-modelos')" class="px-6 py-3 bg-[#0088FF] text-white font-semibold rounded-md hover:bg-blue-600 transition-colors shadow-[0_0_15px_rgba(0,136,255,0.4)]">
+                            Explorar Projetos
+                        </button>
+                        <button onclick="openTab('tab-automacoes')" class="px-6 py-3 border border-[#262626] bg-[#141414] text-white font-semibold rounded-md neon-border transition-all">
+                            Ver Automações
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 w-full">
+                    <div class="relative w-full h-[450px] mx-auto bg-[#050505] border border-[#262626] rounded-lg overflow-hidden neon-glow flex items-center justify-center cursor-move" id="canvas-container">
+                        <div class="absolute bottom-4 left-4 flex flex-col gap-1 z-10 bg-black/60 p-3 rounded-md border border-[#333] text-xs font-mono">
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-gray-500 rounded-sm"></span> Estrutura</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-yellow-500 rounded-sm"></span> Elétrica</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-green-500 rounded-sm"></span> Hidráulica</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-blue-500 rounded-sm"></span> HVAC</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-500 rounded-sm"></span> Incêndio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: MODELOS BIM -->
+        <section id="tab-modelos" class="tab-pane hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold mb-2">Modelos <span class="neon-text">BIM 3D</span></h2>
+                <p class="text-gray-400">Projetos de Saneamento e ETAs interativos.</p>
+            </div>
+        </section>
+
+        <!-- ABA 3: AUTOMAÇÕES -->
+        <section id="tab-automacoes" class="tab-pane hidden">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold mb-2">Automação de <span class="neon-text">Processos</span></h2>
+            </div>
+        </section>
+
+        <!-- ABA 4: FAMÍLIAS -->
+        <section id="tab-familias" class="tab-pane hidden">
+             <div class="mb-8">
+                <h2 class="text-3xl font-bold mb-2">Famílias <span class="neon-text">Paramétricas</span></h2>
+                <p class="text-gray-400">Modelagem LOD alto baseada em catálogos de fabricantes para projetos MEP precisos e quantificáveis.</p>
+            </div>
+
+            <!-- CARDS DAS FAMÍLIAS -->
+            <div id="cards-familias" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Família 1: Telas de Proteção -->
+                <div class="bg-[#141414] rounded-lg overflow-hidden border border-[#262626] group neon-border">
+                    <div class="h-48 bg-[#0a0a0a] flex items-center justify-center border-b border-[#262626] relative overflow-hidden">
+                        <svg class="w-32 h-32 text-gray-700 group-hover:text-[#0088FF] transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">Telas de Proteção PN 10</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Desenvolvimento completo da linha de telas de proteção flangeadas (Saint-Gobain / Padrão TAU) parametrizadas do DN 80 ao DN 1200. Geometria configurada para extração direta de quantitativos exatos e verificação de interferências (Clash Detection).
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300">Revit Families (.rfa)</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300">Catálogo Real</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Família 2: Reduções (CLICÁVEL) -->
+                <div id="card-reducao" class="bg-[#141414] rounded-lg overflow-hidden border border-[#262626] group neon-border cursor-pointer transition-all hover:border-[#0088FF]" style="position: relative; z-index: 10;">
+                    <div class="h-48 bg-[#0a0a0a] flex items-center justify-center border-b border-[#262626] relative overflow-hidden pointer-events-none">
+                         <svg class="w-24 h-24 text-gray-500 group-hover:text-[#0088FF] transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                        </svg>
+                        <span class="absolute bottom-3 right-3 text-xs text-[#0088FF] bg-black/80 px-3 py-1 rounded border border-[#0088FF]/40 font-semibold shadow-lg">Clique para abrir 3D ➔</span>
+                    </div>
+                    <div class="p-6 pointer-events-none">
+                        <h3 class="text-xl font-bold text-white mb-2">Reduções Concêntricas Aço/FoFo</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Famílias de conexões complexas com Lookup Tables (Tabelas de pesquisa CSV). A transição geométrica e os conectores MEP se adaptam automaticamente ao diâmetro do tubo principal, seguindo os padrões dimensionais da norma para redes adutoras.
+                        </p>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300">Lookup Tables</span>
+                            <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300">MEP Connectors</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISUALIZADOR 3D DA REDUÇÃO COM DETALHES DE FLANGES E FUROS -->
+            <div id="view-reducao-3d" class="familia-detalhe hidden">
+                <div class="familia-principal">
+                    <div class="familia-cabecalho flex justify-between items-center">
+                        <div>
+                            <h3>Redução Concêntrica Flangeada (FoFo) · PN 10</h3>
+                            <p><strong>Modelo Aninhado (Nested Family):</strong> Desenvolvido com uma família de flange paramétrica aninhada e integrada a outra família base para união mecânica. Totalmente parametrizado via tabela (Lookup Table) contendo todos os diâmetros (DNs) e comprimentos normatizados de 80 mm a 1200 mm.</p>
+                        </div>
+                        <button id="btn-voltar-cards" class="px-4 py-2 bg-[#262626] text-white rounded text-sm hover:bg-[#333] transition-colors cursor-pointer">⬅ Voltar aos Cards</button>
+                    </div>
+
+                    <div class="viewer" id="viewer3d" tabindex="0">
+                        <div class="viewer-tipo">Tipo <strong id="tipo-atual">80 × 40</strong></div>
+                        <div class="viewer-carregando" id="viewer-carregando">A carregar modelo 3D…</div>
+
+                        <!-- Conectores Interativos nas extremidades -->
+                        <div class="conector" id="conector-1" style="top: 100px; left: 140px;">
+                            <button type="button" id="btn-dec-dn1" title="Retrair DN1">▼</button>
+                            <span class="conector-dn" id="dn1-label">DN 80</span>
+                            <button type="button" id="btn-inc-dn1" title="Expandir DN1">▲</button>
+                        </div>
+                        <div class="conector" id="conector-2" style="top: 300px; right: 100px;">
+                            <button type="button" id="btn-dec-dn2" title="Retrair DN2">▼</button>
+                            <span class="conector-dn" id="dn2-label">DN 40</span>
+                            <button type="button" id="btn-inc-dn2" title="Expandir DN2">▲</button>
+                        </div>
+
+                        <div class="cota" id="cota-l">L = 200 mm</div>
+                        <div class="viewer-ajuda">Arraste para rodar · Roda do rato para zoom</div>
+                    </div>
+
+                    <div class="barra">
+                        <button type="button" id="btn-retrair">◀ Retrair</button>
+                        <input type="range" id="slider-tipo" min="0" max="0" value="0" step="1">
+                        <button type="button" id="btn-expandir" class="primario">Expandir ▶</button>
+                        <button type="button" id="btn-rotacao" aria-pressed="true">Rotação</button>
+                        <button type="button" id="btn-reset-vista">Repor vista</button>
+                    </div>
+                </div>
+
+                <aside class="painel" aria-label="Painel da família">
+                    <div class="painel-abas" role="tablist">
+                        <button type="button" role="tab" id="aba-catalogo" aria-selected="true">Catálogo</button>
+                        <button type="button" role="tab" id="aba-propriedades" aria-selected="false">Propriedades</button>
+                    </div>
+
+                    <div class="painel-conteudo" id="painel-catalogo">
+                        <div class="catalogo-topo">
+                            <select id="filtro-dn1"></select>
+                            <span id="catalogo-contagem"></span>
+                        </div>
+                        <table class="catalogo" id="tabela-catalogo">
+                            <thead>
+                                <tr><th>Tipo</th><th>DN1</th><th>DN2</th><th>L</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="painel-conteudo" id="painel-propriedades" hidden>
+                        <table class="propriedades">
+                            <tbody>
+                                <tr><th colspan="2">Identidade</th></tr>
+                                <tr><td>Família</td><td>Redução Concêntrica Flangeada</td></tr>
+                                <tr><td>Tipo</td><td id="prop-tipo">—</td></tr>
+                                <tr><td>Material</td><td>Ferro fundido (FoFo)</td></tr>
+                                <tr><td>Pressão nominal</td><td>PN 10</td></tr>
+                                <tr><td>Arquitetura</td><td>Modelo Aninhado (Nested) + Furos de Flange</td></tr>
+                                <tr><th colspan="2">Dimensões</th></tr>
+                                <tr><td>DN1</td><td id="prop-dn1">—</td></tr>
+                                <tr><td>DN2</td><td id="prop-dn2">—</td></tr>
+                                <tr><td>Largura (L)</td><td id="prop-l">—</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="border-t border-[#262626] bg-[#0a0a0a] py-6 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>&copy; 2026 Thalya Rebouças - Portfólio de Engenharia BIM e Automação.</p>
+        </div>
+    </footer>
+
+    <!-- Lógica JavaScript com Geometria Detalhada de Flanges, Furos e Catálogo Completo -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        window.openTab = function(tabId) {
+            const panes = document.querySelectorAll('.tab-pane');
+            panes.forEach(pane => {
+                pane.classList.add('hidden');
+                pane.classList.remove('fade-in');
+            });
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('border-[#0088FF]', 'text-[#0088FF]', 'bg-white/5');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+            const targetPane = document.getElementById(tabId);
+            if(targetPane) {
+                targetPane.classList.remove('hidden');
+                targetPane.classList.add('fade-in');
+            }
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-400');
+                activeBtn.classList.add('border-[#0088FF]', 'text-[#0088FF]', 'bg-white/5');
+            }
+        };
+
+        const cardReducao = document.getElementById('card-reducao');
+        const cardsFamilias = document.getElementById('cards-familias');
+        const viewReducao3D = document.getElementById('view-reducao-3d');
+        const btnVoltarCards = document.getElementById('btn-voltar-cards');
+
+        let threeInitialized = false;
+
+        cardReducao.addEventListener('click', () => {
+            cardsFamilias.classList.add('hidden');
+            viewReducao3D.classList.remove('hidden');
+            if (!threeInitialized) {
+                inicializarViewer3D();
+                threeInitialized = true;
+            }
+        });
+
+        btnVoltarCards.addEventListener('click', () => {
+            viewReducao3D.classList.add('hidden');
+            cardsFamilias.classList.remove('hidden');
+        });
+
+        function inicializarViewer3D() {
+            const catalogoDados = [
+                { tipo: "80 x 40", dn1: 80, dn2: 40, l: 200, r1: 40, r2: 20 },
+                { tipo: "80 x 50", dn1: 80, dn2: 50, l: 200, r1: 40, r2: 25 },
+                { tipo: "80 x 75", dn1: 80, dn2: 75, l: 205, r1: 40, r2: 37.5 },
+                { tipo: "100 x 50", dn1: 100, dn2: 50, l: 300, r1: 50, r2: 25 },
+                { tipo: "100 x 80", dn1: 100, dn2: 80, l: 200, r1: 50, r2: 40 },
+                { tipo: "150 x 80", dn1: 150, dn2: 80, l: 400, r1: 75, r2: 40 },
+                { tipo: "150 x 100", dn1: 150, dn2: 100, l: 300, r1: 75, r2: 50 },
+                { tipo: "200 x 100", dn1: 200, dn2: 100, l: 600, r1: 100, r2: 50 },
+                { tipo: "200 x 150", dn1: 200, dn2: 150, l: 300, r1: 100, r2: 75 },
+                { tipo: "250 x 100", dn1: 250, dn2: 100, l: 300, r1: 125, r2: 50 },
+                { tipo: "250 x 150", dn1: 250, dn2: 150, l: 600, r1: 125, r2: 75 },
+                { tipo: "250 x 200", dn1: 250, dn2: 200, l: 300, r1: 125, r2: 100 },
+                { tipo: "300 x 150", dn1: 300, dn2: 150, l: 600, r1: 150, r2: 75 },
+                { tipo: "300 x 200", dn1: 300, dn2: 200, l: 600, r1: 150, r2: 100 },
+                { tipo: "300 x 250", dn1: 300, dn2: 250, l: 300, r1: 150, r2: 125 },
+                { tipo: "350 x 200", dn1: 350, dn2: 200, l: 600, r1: 175, r2: 100 },
+                { tipo: "350 x 250", dn1: 350, dn2: 250, l: 600, r1: 175, r2: 125 },
+                { tipo: "350 x 300", dn1: 350, dn2: 300, l: 300, r1: 175, r2: 150 },
+                { tipo: "400 x 250", dn1: 400, dn2: 250, l: 600, r1: 200, r2: 125 },
+                { tipo: "400 x 300", dn1: 400, dn2: 300, l: 600, r1: 200, r2: 150 },
+                { tipo: "400 x 350", dn1: 400, dn2: 350, l: 310, r1: 200, r2: 175 },
+                { tipo: "450 x 300", dn1: 450, dn2: 300, l: 600, r1: 225, r2: 150 },
+                { tipo: "450 x 350", dn1: 450, dn2: 350, l: 600, r1: 225, r2: 175 },
+                { tipo: "450 x 400", dn1: 450, dn2: 400, l: 300, r1: 225, r2: 200 },
+                { tipo: "500 x 350", dn1: 500, dn2: 350, l: 600, r1: 250, r2: 175 },
+                { tipo: "500 x 400", dn1: 500, dn2: 400, l: 600, r1: 250, r2: 200 },
+                { tipo: "500 x 450", dn1: 500, dn2: 450, l: 300, r1: 250, r2: 225 },
+                { tipo: "600 x 400", dn1: 600, dn2: 400, l: 600, r1: 300, r2: 200 },
+                { tipo: "600 x 450", dn1: 600, dn2: 450, l: 600, r1: 300, r2: 225 },
+                { tipo: "600 x 500", dn1: 600, dn2: 500, l: 600, r1: 300, r2: 250 },
+                { tipo: "700 x 600", dn1: 700, dn2: 600, l: 600, r1: 350, r2: 300 },
+                { tipo: "800 x 700", dn1: 800, dn2: 700, l: 600, r1: 400, r2: 350 },
+                { tipo: "900 x 800", dn1: 900, dn2: 800, l: 600, r1: 450, r2: 400 },
+                { tipo: "1000 x 900", dn1: 1000, dn2: 900, l: 600, r1: 500, r2: 450 },
+                { tipo: "1200 x 1000", dn1: 1200, dn2: 1000, l: 790, r1: 600, r2: 500 }
+            ];
+
+            let indiceAtual = 0;
+            const containerViewer = document.getElementById('viewer3d');
+            const txtTipoAtual = document.getElementById('tipo-atual');
+            const msgCarregando = document.getElementById('viewer-carregando');
+            const sliderTipo = document.getElementById('slider-tipo');
+            const btnRetrair = document.getElementById('btn-retrair');
+            const btnExpandir = document.getElementById('btn-expandir');
+            const btnRotacao = document.getElementById('btn-rotacao');
+            const btnResetVista = document.getElementById('btn-reset-vista');
+            const tbodyCatalogo = document.querySelector('#tabela-catalogo tbody');
+            const catalogoContagem = document.getElementById('catalogo-contagem');
+            const selectFiltroDn1 = document.getElementById('filtro-dn1');
+
+            const propTipo = document.getElementById('prop-tipo');
+            const propDn1 = document.getElementById('prop-dn1');
+            const propDn2 = document.getElementById('prop-dn2');
+            const propL = document.getElementById('prop-l');
+
+            const abaCatalogo = document.getElementById('aba-catalogo');
+            const abaPropriedades = document.getElementById('aba-propriedades');
+            const painelCatalogo = document.getElementById('painel-catalogo');
+            const painelPropriedades = document.getElementById('painel-propriedades');
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(40, containerViewer.clientWidth / containerViewer.clientHeight, 0.1, 10000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(containerViewer.clientWidth, containerViewer.clientHeight);
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            
+            const viewerContentDiv = containerViewer.querySelector('.viewer-ajuda');
+            containerViewer.insertBefore(renderer.domElement, viewerContentDiv);
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.0);
+            dirLight1.position.set(200, 300, 400);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x0088ff, 1.5);
+            dirLight2.position.set(-200, -100, -200);
+            scene.add(dirLight2);
+
+            let grupoReducao = new THREE.Group();
+            scene.add(grupoReducao);
+            camera.position.set(300, 200, 400);
+
+            // COR AZUL DESTACADA
+            const materialCorpo = new THREE.MeshStandardMaterial({ color: 0x0088FF, roughness: 0.35, metalness: 0.5 });
+            const materialFlange = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.25, metalness: 0.7 });
+
+            // Função para criar Geometria Paramétrica Avançada com Flanges e Furos (Modelo Aninhado)
+            function criarGeometriaReducao(dados) {
+                grupoReducao.clear();
+
+                // 1. Corpo Cônico Central
+                const geomCorpo = new THREE.CylinderGeometry(dados.r2, dados.r1, dados.l, 48, 1, true);
+                const meshCorpo = new THREE.Mesh(geomCorpo, materialCorpo);
+                meshCorpo.rotation.z = Math.PI / 2;
+                grupoReducao.add(meshCorpo);
+
+                // Função auxiliar para gerar Flanges com furos passantes (Família Aninhada)
+                function criarFlangeComFuros(raioExterno, raioInterno, larguraFlange, posX, numFuros = 8) {
+                    const flangeShape = new THREE.Shape();
+                    flangeShape.absarc(0, 0, raioExterno, 0, Math.PI * 2, false);
+
+                    const holePath = new THREE.Path();
+                    holePath.absarc(0, 0, raioInterno, 0, Math.PI * 2, true);
+                    flangeShape.holes.push(holePath);
+
+                    // Adicionar furos na face da flange
+                    const raioFuro = Math.max(raioExterno * 0.08, 3);
+                    const raioCentroFuros = raioExterno * 0.78;
+                    for (let i = 0; i < numFuros; i++) {
+                        const angulo = (i / numFuros) * Math.PI * 2;
+                        const fx = Math.cos(angulo) * raioCentroFuros;
+                        const fz = Math.sin(angulo) * raioCentroFuros;
+                        const fpath = new THREE.Path();
+                        fpath.absarc(fx, fz, raioFuro, 0, Math.PI * 2, true);
+                        flangeShape.holes.push(fpath);
+                    }
+
+                    const extrudeSettings = { depth: larguraFlange, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 1, bevelThickness: 1 };
+                    const geomFlange = new THREE.ExtrudeGeometry(flangeShape, extrudeSettings);
+                    const meshFlange = new THREE.Mesh(geomFlange, materialFlange);
+                    
+                    meshFlange.rotation.y = Math.PI / 2;
+                    meshFlange.position.x = posX - larguraFlange / 2;
+                    return meshFlange;
+                }
+
+                const larguraFlange1 = Math.max(dados.l * 0.04, 14);
+                const larguraFlange2 = Math.max(dados.l * 0.04, 14);
+
+                const flange1 = criarFlangeComFuros(dados.r1 * 1.35, dados.r1, larguraFlange1, -dados.l / 2, dados.dn1 > 150 ? 12 : 8);
+                const flange2 = criarFlangeComFuros(dados.r2 * 1.35, dados.r2, larguraFlange2, dados.l / 2, dados.dn2 > 150 ? 12 : 8);
+
+                grupoReducao.add(flange1);
+                grupoReducao.add(flange2);
+            }
+
+            function atualizarVisualizador(index) {
+                if (index < 0 || index >= catalogoDados.length) return;
+                indiceAtual = index;
+                const dados = catalogoDados[indiceAtual];
+
+                criarGeometriaReducao(dados);
+
+                txtTipoAtual.textContent = dados.tipo;
+                sliderTipo.value = indiceAtual;
+                document.getElementById('cota-l').textContent = `L = ${dados.l} mm`;
+                document.getElementById('dn1-label').textContent = `DN ${dados.dn1}`;
+                document.getElementById('dn2-label').textContent = `DN ${dados.dn2}`;
+
+                if (propTipo) propTipo.textContent = dados.tipo;
+                if (propDn1) propDn1.textContent = `${dados.dn1} mm`;
+                if (propDn2) propDn2.textContent = `${dados.dn2} mm`;
+                if (propL) propL.textContent = `${dados.l} mm`;
+
+                const linhas = tbodyCatalogo.querySelectorAll('tr');
+                linhas.forEach((linha, i) => {
+                    if (i === indiceAtual) {
+                        linha.classList.add('ativo');
+                        linha.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    } else {
+                        linha.classList.remove('ativo');
+                    }
+                });
+
+                if (msgCarregando) msgCarregando.hidden = true;
+            }
+
+            function inicializarCatalogo() {
+                tbodyCatalogo.innerHTML = '';
+                const dn1Set = new Set();
+
+                catalogoDados.forEach((item, index) => {
+                    dn1Set.add(item.dn1);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${item.tipo}</td><td>${item.dn1}</td><td>${item.dn2}</td><td>${item.l}</td>`;
+                    tr.addEventListener('click', () => atualizarVisualizador(index));
+                    tbodyCatalogo.appendChild(tr);
+                });
+
+                selectFiltroDn1.innerHTML = '<option value="">Todos os DN1</option>';
+                Array.from(dn1Set).sort((a, b) => a - b).forEach(dn => {
+                    const opt = document.createElement('option');
+                    opt.value = dn;
+                    opt.textContent = `DN ${dn}`;
+                    selectFiltroDn1.appendChild(opt);
+                });
+
+                catalogoContagem.textContent = `${catalogoDados.length} tipos`;
+                sliderTipo.max = catalogoDados.length - 1;
+            }
+
+            sliderTipo.addEventListener('input', (e) => atualizarVisualizador(parseInt(e.target.value, 10)));
+            btnRetrair.addEventListener('click', () => { if (indiceAtual > 0) atualizarVisualizador(indiceAtual - 1); });
+            btnExpandir.addEventListener('click', () => { if (indiceAtual < catalogoDados.length - 1) atualizarVisualizador(indiceAtual + 1); });
+            
+            document.getElementById('btn-dec-dn1').addEventListener('click', () => { if (indiceAtual > 0) atualizarVisualizador(indiceAtual - 1); });
+            document.getElementById('btn-inc-dn1').addEventListener('click', () => { if (indiceAtual < catalogoDados.length - 1) atualizarVisualizador(indiceAtual + 1); });
+            document.getElementById('btn-dec-dn2').addEventListener('click', () => { if (indiceAtual > 0) atualizarVisualizador(indiceAtual - 1); });
+            document.getElementById('btn-inc-dn2').addEventListener('click', () => { if (indiceAtual < catalogoDados.length - 1) atualizarVisualizador(indiceAtual + 1); });
+
+            selectFiltroDn1.addEventListener('change', (e) => {
+                const val = e.target.value;
+                const linhas = tbodyCatalogo.querySelectorAll('tr');
+                linhas.forEach((linha, i) => {
+                    if (!val || catalogoDados[i].dn1.toString() === val) {
+                        linha.style.display = '';
+                    } else {
+                        linha.style.display = 'none';
+                    }
+                });
+            });
+
+            btnRotacao.addEventListener('click', () => {
+                controls.autoRotate = !controls.autoRotate;
+                btnRotacao.classList.toggle('primario', controls.autoRotate);
+            });
+            btnResetVista.addEventListener('click', () => { camera.position.set(300, 200, 400); controls.target.set(0,0,0); });
+
+            abaCatalogo.addEventListener('click', () => {
+                abaCatalogo.setAttribute('aria-selected', 'true');
+                abaPropriedades.setAttribute('aria-selected', 'false');
+                painelCatalogo.hidden = false;
+                painelPropriedades.hidden = true;
+            });
+            abaPropriedades.addEventListener('click', () => {
+                abaPropriedades.setAttribute('aria-selected', 'true');
+                abaCatalogo.setAttribute('aria-selected', 'false');
+                painelPropriedades.hidden = false;
+                painelCatalogo.hidden = true;
+            });
+
+            inicializarCatalogo();
+            atualizarVisualizador(0);
+            controls.autoRotate = true;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
